@@ -136,13 +136,17 @@ mod tests {
 
         let ref_cell_borrow_1 = ref_cell.borrow().unwrap();
         let ref_cell_borrow_2 = ref_cell.borrow().unwrap();
-        let ref_cell_borrow_3 = ref_cell.borrow().unwrap();
+
+        {
+            let ref_cell_borrow_3 = ref_cell.borrow().unwrap();
+            assert_eq!(ref_cell.state.get(), RefState::Shared(3));
+        }
+
         let ref_cell_borrow_mut = ref_cell.borrow_mut();
 
         assert_eq!(ref_cell_borrow_1.as_str(), "MyRefCell");
         assert_eq!(ref_cell_borrow_2.as_str(), "MyRefCell");
-        assert_eq!(ref_cell_borrow_3.as_str(), "MyRefCell");
-        assert_eq!(ref_cell.state.get(), RefState::Shared(3));
+        assert_eq!(ref_cell.state.get(), RefState::Shared(2));
         assert!(ref_cell_borrow_mut.is_none());
     }
 
