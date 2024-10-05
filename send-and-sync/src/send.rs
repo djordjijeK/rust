@@ -12,8 +12,6 @@ be done with caution to ensure there are no risks of data races or unsound memor
 - `Send` is automatically implemented for types that contain `Send` data, unless explicitly marked
 otherwise.
 */
-
-
 struct MySendType<T> {
     // raw pointer to T; raw pointers are neither `Send` nor `Sync` by default due to the risk
     // of unsafe memory access
