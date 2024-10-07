@@ -15,9 +15,11 @@ the inner value. Instead, it returns a copy to prevent issues with Rust's borrow
 */
 use std::cell::UnsafeCell;
 
+
 pub struct MyCell<T> {
     value: UnsafeCell<T>
 }
+
 
 impl<T> MyCell<T> {
     pub fn new(value: T) -> Self {
@@ -26,11 +28,13 @@ impl<T> MyCell<T> {
         }
     }
 
+
     pub fn set(&self, value: T) {
         unsafe {
             *self.value.get() = value;
         }
     }
+
 
     pub fn get(&self) -> T
     where

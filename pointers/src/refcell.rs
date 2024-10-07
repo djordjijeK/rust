@@ -19,10 +19,12 @@ enforcing borrowing rules dynamically.
 use std::ops::{Deref, DerefMut};
 use std::cell::{Cell, UnsafeCell};
 
+
 pub struct MyRefCell<T> {
     value: UnsafeCell<T>,
     state: Cell<RefState>
 }
+
 
 impl<T> MyRefCell<T> {
     pub fn new(value: T) -> Self {
@@ -31,6 +33,7 @@ impl<T> MyRefCell<T> {
             state: Cell::new(RefState::Unshared)
         }
     }
+
 
     pub fn borrow(&self) -> Option<Ref<'_, T>> {
         match self.state.get() {
@@ -46,6 +49,7 @@ impl<T> MyRefCell<T> {
         }
     }
 
+
     pub fn borrow_mut(&self) -> Option<RefMut<'_, T>> {
         if let RefState::Unshared = self.state.get() {
             self.state.set(RefState::Exclusive);
@@ -56,6 +60,7 @@ impl<T> MyRefCell<T> {
     }
 }
 
+
 #[derive(Debug, Copy, Clone, PartialEq)]
 enum RefState {
     Unshared,
@@ -63,9 +68,11 @@ enum RefState {
     Exclusive
 }
 
+
 struct Ref<'refcell, T> {
     refcell: &'refcell MyRefCell<T>
 }
+
 
 impl<T> Drop for Ref<'_, T> {
     fn drop(&mut self) {
@@ -81,6 +88,7 @@ impl<T> Drop for Ref<'_, T> {
     }
 }
 
+
 impl<T> Deref for Ref<'_, T> {
     type Target = T;
 
@@ -89,9 +97,11 @@ impl<T> Deref for Ref<'_, T> {
     }
 }
 
+
 struct RefMut<'refcell, T> {
     refcell: &'refcell MyRefCell<T>
 }
+
 
 impl<T> Drop for RefMut<'_, T> {
     fn drop(&mut self) {
@@ -104,6 +114,7 @@ impl<T> Drop for RefMut<'_, T> {
     }
 }
 
+
 impl<T> Deref for RefMut<'_, T> {
     type Target = T;
 
@@ -112,15 +123,18 @@ impl<T> Deref for RefMut<'_, T> {
     }
 }
 
+
 impl<T> DerefMut for RefMut<'_, T> {
     fn deref_mut(&mut self) -> &mut Self::Target {
         unsafe { &mut *self.refcell.value.get() }
     }
 }
 
+
 #[cfg(test)]
 mod tests {
     use super::{MyRefCell, RefState};
+
 
     #[test]
     fn my_ref_cell_new() {
@@ -129,6 +143,7 @@ mod tests {
         assert_eq!(ref_cell.borrow().unwrap().as_str(), "MyRefCell");
         assert_eq!(ref_cell.state.get(), RefState::Unshared);
     }
+
 
     #[test]
     fn my_ref_cell_borrow() {
@@ -149,6 +164,7 @@ mod tests {
         assert_eq!(ref_cell.state.get(), RefState::Shared(2));
         assert!(ref_cell_borrow_mut.is_none());
     }
+
 
     #[test]
     fn my_ref_cell_borrow_mut() {
