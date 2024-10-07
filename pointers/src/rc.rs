@@ -1,4 +1,24 @@
+/*
+- `Rc<T>` is a reference-counted smart pointer that enables multiple ownership of a value, allowing
+the value to be shared between different parts of your program while ensuring the value is cleaned
+up once the last reference goes out of scope.
+
+- `Rc<T>` works by keeping track of the number of references to the data it holds, automatically
+deallocating the value when the reference count reaches zero.
+
+- `Rc<T>` is only for single-threaded scenarios; it is marked as `!Send` and `!Sync`, meaning it
+cannot be shared between threads. For multi-threaded environments, you would use `Arc<T>` (atomic
+reference counting) instead.
+
+- Cloning an `Rc<T>` is cheap, as it only increments the reference count. Dropping an `Rc<T>`
+decrements the reference count, potentially deallocating the value if no more references exist.
+
+- `Rc<T>` uses the `clone()` method to create additional references to the value. Each cloned
+`Rc<T>` increments the reference count, and the value is only deallocated when
+all references are dropped.
+*/
 use std::cell::Cell;
+use std::marker::PhantomData;
 use std::ops::Deref;
 use std::ptr::NonNull;
 
@@ -10,7 +30,8 @@ struct RcInner<T> {
 
 
 pub struct MyRc<T> {
-    pub inner: NonNull<RcInner<T>>
+    inner: NonNull<RcInner<T>>,
+    _marker: PhantomData<RcInner<T>>
 }
 
 
@@ -18,7 +39,8 @@ impl<T> MyRc<T> {
     pub fn new(value: T) -> Self {
         let inner = Box::new(RcInner {value, ref_count: Cell::new(1)});
         MyRc {
-            inner: unsafe { NonNull::new_unchecked(Box::into_raw(inner)) }
+            inner: unsafe { NonNull::new_unchecked(Box::into_raw(inner)) },
+            _marker: PhantomData,
         }
     }
 }
@@ -30,7 +52,8 @@ impl<T> Clone for MyRc<T> {
         inner.ref_count.set(inner.ref_count.get() + 1);
 
         MyRc {
-            inner: self.inner
+            inner: self.inner,
+            _marker: PhantomData
         }
     }
 }
